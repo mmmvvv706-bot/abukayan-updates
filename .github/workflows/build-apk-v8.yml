@@ -1,4 +1,4 @@
-name: Build Takaful V8 APK
+گname: Build Takaful V8 APK
 
 on:
   workflow_dispatch:
