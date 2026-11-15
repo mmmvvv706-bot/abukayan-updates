@@ -1,0 +1,44 @@
+name: Build Abu Kayan V10 APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Extract V10 Project
+        run: |
+          mkdir -p v10
+          unzip -q AbuKayan-V10-source.zip -d v10
+
+      - name: Build V10 APK
+        working-directory: v10
+        run: gradle --no-daemon assembleDebug
+
+      - name: Upload V10 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AbuKayan-V10-APK
+          path: v10/app/build/outputs/apk/debug/app-debug.apk
