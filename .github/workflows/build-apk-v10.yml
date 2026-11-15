@@ -20,10 +20,13 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-            - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: ''
+      - name: Setup Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "Checking Android SDK..."
+          test -d "$ANDROID_HOME"
+          test -d "$ANDROID_HOME/platform-tools"
+          echo "Android SDK directory found"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -44,3 +47,4 @@ jobs:
         with:
           name: AbuKayan-V10-APK
           path: v10/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
