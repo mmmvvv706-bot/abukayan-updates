@@ -1,0 +1,44 @@
+name: Build AbuKayan V12 APK (Working Runner)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'AbuKayan-V12-source.zip'
+      - '.github/workflows/build-v12-4.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Unzip V12 source
+        run: |
+          mkdir -p v12
+          unzip -q AbuKayan-V12-source.zip -d v12
+          test -f v12/settings.gradle.kts
+          test -f v12/app/build.gradle.kts
+
+      - name: Build APK (using preinstalled SDK and Gradle)
+        working-directory: v12
+        run: |
+          gradle --no-daemon --stacktrace assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AbuKayan-V12-APK
+          path: v12/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
