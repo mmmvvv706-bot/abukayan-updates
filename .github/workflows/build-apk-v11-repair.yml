@@ -1,0 +1,75 @@
+name: Abu Kayan V11 - Repair Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "AbuKayan-V11-source.zip"
+      - ".github/workflows/build-apk-v11-repair.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK
+        shell: bash
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+
+          SDKMANAGER=$(find "$SDK_ROOT/cmdline-tools" \
+            -type f -name sdkmanager | sort -V | tail -n 1)
+
+          if [ -z "$SDKMANAGER" ]; then
+            echo "SDKMANAGER NOT FOUND"
+            exit 1
+          fi
+
+          yes | "$SDKMANAGER" \
+            --sdk_root="$SDK_ROOT" --licenses || true
+
+          "$SDKMANAGER" \
+            --sdk_root="$SDK_ROOT" \
+            --install \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Extract V11
+        run: |
+          mkdir -p v11
+          unzip -q AbuKayan-V11-source.zip -d v11
+
+          test -f v11/settings.gradle.kts
+          test -f v11/app/build.gradle.kts
+
+      - name: Build APK
+        working-directory: v11
+        run: |
+          gradle --no-daemon --stacktrace assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AbuKayan-V11-APK
+          path: v11/app/build/outputs/apk/debug/app
