@@ -20,13 +20,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Android SDK
+      - name: Check Android SDK
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "Checking Android SDK..."
+          echo "Android SDK: $ANDROID_HOME"
           test -d "$ANDROID_HOME"
           test -d "$ANDROID_HOME/platform-tools"
-          echo "Android SDK directory found"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
